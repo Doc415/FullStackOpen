@@ -1,0 +1,10 @@
+
+
+***on submit new Note***
+
+    --- client js code adds the new Note to notes array 
+    --- client renders new notelist on the page
+    --- client sends new note to server with Post request
+
+Client --->       Post request Json(new Note) to API            ---> Server                //controller executes necessary operations on the server
+Client<----      Returns Response(status 201,created )          <--- Server

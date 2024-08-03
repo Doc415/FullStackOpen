@@ -1,0 +1,19 @@
+Client --->       Post request Json(new Note) to API                  ---> Server                //controller executes necessary operations on the server
+Client<----      Returns Response(status 302,redirect)          <--- Server
+
+Client --->   Get request to the adress defined in the header  ---> Server
+Client<----             HTML document                         <---- Server                 //reload page
+
+Client --->    Get request for main.css file                  ---> Server
+Client<----       css file                                    <---- Server
+
+Client --->   Get request for main.js                          ---> Server
+Client<----        js file                                     <---- Server
+
+*** client executes js file***
+
+Client --->   Get request from js code to API for notes        ---> Server
+Client<----        notes in data json                         <---- Server
+
+**** client executes event handler****
+**** client renders page using Dom-Api***
