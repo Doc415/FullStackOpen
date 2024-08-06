@@ -24,7 +24,7 @@ const Persons = ({list,onDelete}) => {
     <div>
       {list.map( person=>
       <div key={person.id}> <span>{person.name}</span> <span>{person.number}</span>
-      <button key={person.id} type='button' onClick={()=>onDelete(person.id)}>Remove</button>
+      <button  type='button' onClick={()=>onDelete(person.id)}>Remove</button>
       </div>
     )}
     </div>
@@ -60,14 +60,34 @@ const App = () => {
   const submitNewName= (event) => {
       event.preventDefault()
       const newPerson={ 
+        id:  `${persons.length+1}`,
         name: newName,
-        number: newPhoneNumber,
-        id: `${persons.length+1}`
+        number: newPhoneNumber        
       }
+
       if (persons.some(person=> person.name===newPerson.name)){
-        alert(`${newName} is already recorded!`)
-        return
-      }
+        if(window.confirm(`${newName} is already recorded! Would you like to update number?`)){
+            const persona= persons.find(person=>person.name===newPerson.name)
+            newPerson.id=persona.id; 
+            personService.updatePerson(newPerson).then(response=> {
+              const updatedPerson=response.data
+              console.log(updatedPerson)
+              const updatedPersons=persons.map(person=> person.id!==updatedPerson.id? person: updatedPerson )
+              setPersons(updatedPersons)            
+              setNewName('')
+              setNewPhoneNumber('') 
+            })
+            return
+        }
+        else
+         {
+          setNewName('')
+          setNewPhoneNumber('')
+          }
+          return
+        }
+
+      console.log(newPerson.id)
       personService.createPerson(newPerson)
            .then(response=> {
               console.log(response.data)            
@@ -96,7 +116,7 @@ const App = () => {
     personService.deletePerson(id).then(response=>{
                                             setPersons(persons.filter(person=> person.id!==id))
                                              console.log(response.status) 
-                                        })
+                                    })
                                    .catch(error=> alert(error))       
     }                            
   }
