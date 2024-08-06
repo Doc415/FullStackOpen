@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState,useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/persons'
 
 const PersonForm =(props) => {
   return(
@@ -18,11 +18,14 @@ const PersonForm =(props) => {
   )
 }
 
-const Persons = ({list}) => {
+const Persons = ({list,onDelete}) => {
+
   return(
     <div>
       {list.map( person=>
-      <div key={person.id}> <span>{person.name}</span> <span>{person.number}</span></div>
+      <div key={person.id}> <span>{person.name}</span> <span>{person.number}</span>
+      <button key={person.id} type='button' onClick={()=>onDelete(person.id)}>Remove</button>
+      </div>
     )}
     </div>
  
@@ -44,11 +47,10 @@ const App = () => {
   const [searchInput, setSearchInput]=useState('')
   const personList= searchInput===''? persons: persons.filter(person=> person.name.toLowerCase().startsWith(searchInput.toLowerCase()))
 
-  useEffect(()=> {axios.get('http://localhost:3001/persons')
-                      .then(response=> {
-                        setPersons(response.data)}
-                      )},[]                      
-)
+  useEffect(()=>{personService.getAll().then(initialPersons=> {
+                                       setPersons(initialPersons)}
+                                    )}     
+            ,[])
 
   const updateSearchResult= (event)=>{
     setSearchInput(event.target.value)
@@ -60,16 +62,24 @@ const App = () => {
       const newPerson={ 
         name: newName,
         number: newPhoneNumber,
-        id: persons.length+1
+        id: `${persons.length+1}`
       }
       if (persons.some(person=> person.name===newPerson.name)){
         alert(`${newName} is already recorded!`)
         return
       }
-      console.log(newPerson)
-      setPersons(persons.concat(newPerson))
-      setNewName('')
-      setNewPhoneNumber('')
+      personService.createPerson(newPerson)
+           .then(response=> {
+              console.log(response.data)            
+              setPersons(persons.concat(response.data))
+              console.log('Recorded successfuly... ')
+            })
+            .catch(error=> alert('error on creation:',error))
+
+            setNewName('')
+            setNewPhoneNumber('')
+           
+               
   }
 
   const updateNewPhoneNumber=(event)=>{
@@ -80,6 +90,17 @@ const App = () => {
     setNewName(event.target.value)
   }
 
+  const onDeletePerson= (id) => {
+    if(window.confirm(`This will delete person with id: ${id} Are you sure?`)){
+    console.log(id)
+    personService.deletePerson(id).then(response=>{
+                                            setPersons(persons.filter(person=> person.id!==id))
+                                             console.log(response.status) 
+                                        })
+                                   .catch(error=> alert(error))       
+    }                            
+  }
+
   return (
     
     <div>
@@ -87,7 +108,7 @@ const App = () => {
       <h2>Phonebook</h2>
       <PersonForm name={newName} number={newPhoneNumber} onNameChange={updateNewName} onNumberChange={updateNewPhoneNumber} onSubmit={submitNewName}/>
       <h2>Numbers</h2>
-      <Persons list={personList}/>
+      <Persons list={personList} onDelete={onDeletePerson}/>
       
     </div>
   )
